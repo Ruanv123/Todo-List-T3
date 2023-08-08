@@ -1,4 +1,5 @@
 import type { Todo } from '@/types';
+import { api } from '@/utils/api';
 
 //tipando as props atravez do objeto criado no types
 type TodoProps = {
@@ -8,6 +9,20 @@ type TodoProps = {
 export default function Todo({ todo }: TodoProps) {
   //recebendo as props do todo
   const { id, text, done } = todo;
+
+  const trpc = api.useContext();
+
+  const { mutate: doneMutation } = api.todo.toggle.useMutation({
+    onSettled: async () => {
+      await trpc.todo.all.invalidate();
+    },
+  });
+
+  const { mutate: deleteMutation } = api.todo.delete.useMutation({
+    onSettled: async () => {
+      await trpc.todo.all.invalidate();
+    },
+  });
 
   return (
     <>
@@ -19,9 +34,9 @@ export default function Todo({ todo }: TodoProps) {
             name="done"
             id={id}
             checked={done}
-            /* onChange={(e) => {
+            onChange={(e) => {
               doneMutation({ id, done: e.target.checked });
-            }} */
+            }}
           />
           <label
             htmlFor={id}
@@ -32,9 +47,9 @@ export default function Todo({ todo }: TodoProps) {
         </div>
         <button
           className="w-full rounded-lg bg-blue-700 px-2 py-1 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:w-auto"
-          /* onClick={() => {
+          onClick={() => {
             deleteMutation(id);
-          }} */
+          }}
         >
           Delete
         </button>
