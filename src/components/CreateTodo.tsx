@@ -1,4 +1,4 @@
-import { todoInput } from '@/types';
+import { type Todo, todoInput } from '@/types';
 import { api } from '@/utils/api';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -12,8 +12,31 @@ export default function CreateTodo() {
 
   //chamada da api para criar o todo | | como se fosse um axios post
   const { mutate } = api.todo.create.useMutation({
-    //metodo para atualizar a consulta ao criar um novo todo e atualizar o estado
-    //para aparecer o novo TODO
+    onMutate: async (newTodo) => {
+      //cancela todas as buscas de dados para nao sobrescrever as atuais
+      await trpc.todo.all.cancel();
+      // Snapshot the previous value
+      const previousTodos = trpc.todo.all.getData();
+
+      // Optimistically update to the new value
+      trpc.todo.all.setData(undefined, (prev) => {
+        const optimisticTodo: Todo = {
+          id: 'optimistic-todo-id',
+          text: newTodo, // 'placeholder'
+          done: false,
+        };
+        if (!prev) return [optimisticTodo];
+        return [...prev, optimisticTodo];
+      });
+
+      // Clear input
+      setNewTodo('');
+
+      // Return a context object with the snapshotted value
+      return { previousTodos };
+      //metodo para atualizar a consulta ao criar um novo todo e atualizar o estado
+      //para aparecer o novo TODO
+    },
     onSettled: async () => {
       await trpc.todo.all.invalidate();
     },

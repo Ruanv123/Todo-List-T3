@@ -13,6 +13,6 @@
 - [x] Login
 - [x] List Todos
 - [x] Create Todos
-- [ ] Toggle Todos
-- [ ] Delete Todos
-- [ ] Optimistic update
+- [x] Toggle Todos
+- [x] Delete Todos
+- [x] Optimistic update
